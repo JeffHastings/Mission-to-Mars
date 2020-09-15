@@ -91,13 +91,13 @@ def mars_facts():
 
     # Add try/except for error handling
     try:
-        # Use 'read_html' to scrape the facts table into a dataframe
+    # Use 'read_html' to scrape the facts table into a dataframe
         df = pd.read_html('http://space-facts.com/mars/')[0]
 
     except BaseException:
         return None
 
-        # Assign columns and set index of dataframe
+    # Assign columns and set index of dataframe
     df.columns=['Description', 'Mars']
     df.set_index('Description', inplace=True)
 
@@ -106,5 +106,56 @@ def mars_facts():
 
 if __name__ == "__main__":
 
-        # If running as script, print scraped data
+    # If running as script, print scraped data
     print(scrape_all())
+
+    # Challenge (Mars Hemisphere)
+
+def hemispheres(browser):
+    
+    url = (
+        "https://astrogeology.usgs.gov/search/"
+        "results?q=hemisphere+enhanced&k1=target&v1=Mars"
+    )
+
+    browser.visit(url)
+
+    # Find and click the image buttons
+    hemisphere_image_urls = [0]
+
+    for i in range(4):
+        # Find the elements 
+        browser.find_by_css("a.product-item h3")[i].click()
+        hemisphere_data = scrape_hemisphere(browser.html)
+
+        # Append hemisphere object to list
+        hemisphere_image_urls.append(hemisphere_data)
+
+        # Go back to retrive other images
+        browser.back()
+
+    return hemisphere_image_urls
+
+
+def scrape_hemisphere(html_text):
+
+    # Parse the resulting html with soup
+    hemi_soup = soup(html_text, "html.parser")
+
+    # adding try/except for error handling
+    try:
+        title_elem = hemi_soup.find("h2", class_="title").get_text()
+        sample_elem = hemi_soup.find("a", text="Sample").get("href")
+
+    except AttributeError:
+        title_elem = None
+        sample_elem = None
+
+
+    # Store Name of Hemisphere and Image
+    hemispheres = {
+        "title": title_elem,
+        "img_url": sample_elem
+    }
+
+    return hemispheres
